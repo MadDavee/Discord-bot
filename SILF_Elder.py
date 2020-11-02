@@ -1,5 +1,6 @@
 # importing discord package
 import discord
+import urllib.request, json 
 from discord import message
 from discord.embeds import Embed
 from discord.ext import commands
@@ -24,6 +25,16 @@ async def help(context):
 async def on_ready():
     testBotChannel = client.get_channel(772103423721472040)
     await testBotChannel.send('Jedu bomby, můžeš mě používat')
+
+
+@client.command(name='jakub')
+async def jakub(context):
+
+    with urllib.request.urlopen("http://109.183.224.100:2222/api") as url:
+        data = json.loads(url.read().decode())
+
+    await context.message.channel.send(data)
+
 
 @client.event
 async def on_message(message):
