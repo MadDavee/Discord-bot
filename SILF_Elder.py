@@ -16,8 +16,8 @@ async def help(context):
 
     myEmbed = discord.Embed(title="Commands", description='Default prefix is -', color=0x424242)
     myEmbed.add_field(name="help", value="shows commands", inline=False)
+    myEmbed.add_field(name="teplota", value="shows temperature and pressure from Jacobs's room", inline=False)
     myEmbed.set_footer(text= "Commands in embed :)")
-    myEmbed.set_author(name="S!LF Elder")
 
     await context.message.channel.send(embed=myEmbed)
 
@@ -27,13 +27,16 @@ async def on_ready():
     await testBotChannel.send('Jedu bomby, můžeš mě používat')
 
 
-@client.command(name='jakub')
-async def jakub(context):
+@client.command(name='teplota')
+async def teplota(context):
 
     with urllib.request.urlopen("http://109.183.224.100:2222/api") as url:
         data = json.loads(url.read().decode())
+    
+    temperature = round(data['temperature'], 1)
+    pressure = round(data['pressure'], 0)
 
-    await context.message.channel.send(data)
+    await context.message.channel.send("V Jakubovo pokoji je právě {} °C a tlak {} hPa.".format(temperature, pressure))
 
 
 @client.event
@@ -48,6 +51,9 @@ async def on_message(message):
 
         await testBotChannel.send(embed=myEmbed)
     await client.process_commands(message)
+
+
+
 
 
 
