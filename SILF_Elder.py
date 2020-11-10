@@ -30,16 +30,18 @@ async def on_ready():
 @client.command(name='teplota')
 async def teplota(context):
 
-    req = urllib.request.Request('http://109.183.224.100:2222/api')               #Zjisti, zdali je server online. Pokud neni, skoci na except (radek 25)
-    try: 
-      with urllib.request.urlopen("http://109.183.224.100:2222/api") as url:      #Deklarace URL adresy
-        data = json.loads(url.read().decode())                                    #Dekodovani JSONu
-        tmp = data['temperature']                                                 
-        pre = data['pressure']                                                    
-        await context.message.channel.send("V Jakubovo pokoji je právě {} °C a tlak {} hPa.".format(tmp, pre))
+    url = '109.183.224.100:2222/api'
+    try:
+        req = urllib.request.Request("http://" + url)
+        req = urllib.request.urlopen(req, timeout=3)
+        with urllib.request.urlopen("http://109.183.224.100:2222/api") as url:      #Deklarace URL adresy
+            data = json.loads(url.read().decode())                                    #Dekodovani JSONu
+            tmp = data['temperature']                                                
+            pre = round(data['pressure'], 2)                                                    
+            await context.message.channel.send("V Jakubovo pokoji je právě {} °C a tlak {} hPa.".format(tmp, pre))
 
-    except urllib.error.URLError as e:                                            #Tato cast kodu se vykona, pokud je server offline
-        await context.message.channel.send("Nastala nějaká chyba, server je nejspíš nedostupný :(")
+    except:
+        await context.message.channel.send("Nastala nějaká chyba, server je nejspíš nedostupný :pensive:")
 
     
 
