@@ -1,15 +1,38 @@
 # importing discord package
-import discord
+from asyncio.tasks import wait
 import urllib.request, json 
+import datetime
+import asyncio
+import random
+import discord
 from discord import message
 from discord.embeds import Embed
 from discord.ext import commands
 from discord.ext.commands import context
+from discord.ext.commands import converter
+from discord.ext.commands.core import command
 
 # client (this bot)
 client = commands.Bot(command_prefix='-', help_command=None)
 
-#doing stuff
+# defining time for giveaways
+def convert(time):
+    pos = ["s", "m", "h", "d"]
+    time_dict = {"s" : 1, "m" : 60, "h" : 3600, "d" : 3600*24}
+
+    unit = time[-1]
+
+    if unit not in pos:
+        return -1
+    try:
+        val = int(time[:-1])
+    except:
+        return -2
+    
+    return val * time_dict[unit]
+
+
+# Actual commands 
 
 @client.command(name='help')
 async def help(context):
@@ -44,20 +67,70 @@ async def teplota(context):
         await context.message.channel.send("Nastala nějaká chyba, server je nejspíš nedostupný :pensive:")
 
     
+# Giveaway function 
+@client.command()
+@commands.has_any_role("The one and only", "S!LF Elders")
+async def ga(ctx):
+    await ctx.send("Jdeme sestavit tenhle rigged giveaway :)")
+    
+    questions = ["Teď napiš třeba #giveaways ty hajzle",
+                "Jak dlouho to má trvat? Napiš to jako číslo + s / m / h / d",
+                "Co bude výhrou?"]
+    
+    answers = []
 
-@client.event
-async def on_message(message):
-    if message.content == 'old':
-        testBotChannel = client.get_channel(772103423721472040)
+    def check(m):
+        return m.author == ctx.author and m.channel == ctx.channel
 
-        myEmbed = discord.Embed(title="Title", description="description", color=0x424242)
-        myEmbed.add_field(name="name", value="value", inline=False)
-        myEmbed.set_footer(text= "text in footer")
-        myEmbed.set_author(name="name -author")
+    for i in questions:
+        await ctx.send(i)
 
-        await testBotChannel.send(embed=myEmbed)
-    await client.process_commands(message)
+        try:
+            msg = await client.wait_for('message', timeout=15.0, check=check)
+        except asyncio.TimeoutError:
+            await ctx.send("Jsi nesthil odepsat :/")
+            return
+        else:
+            answers.append(msg.content)
 
+    try:
+        c_id = int(answers[0][2:-1])
+    except:
+        await ctx.send(f"Jsi to špatně napsal")
+        return
+    
+    channel = client.get_channel(c_id)
+
+    time = convert(answers[1])
+    if time == -1:
+        await ctx.send(f"ERROR: Špatně jsi napsal jednotku. Piš hned za číslo: s / m / h / d")
+        return
+    elif time == -2:
+        await ctx.send(f"ERROR: Musí to bejt číslo boha")
+        return
+    prize = answers[2]
+
+    await ctx.send(f"Giveaway bude v kanále {channel.mention} a bude trvat {answers[1]}")
+
+    embed = discord.Embed(title= "Giveaway!", description= f"Hlasuj pomocí 🎉 o: {prize}", color= 0x9e200d)
+    embed.add_field(name= "Vytvořil/a:", value= ctx.author.mention)
+    embed.set_footer(text= f"Končí za {answers[1]}")
+
+    my_msg = await channel.send(embed=embed)
+
+    await my_msg.add_reaction('🎉')
+
+    await asyncio.sleep(time)
+
+    new_msg = await channel.fetch_message(my_msg.id)
+
+    users = await new_msg.reactions[0].users().flatten()
+    users.pop(users.index(client.user))
+
+    winner = random.choice(users)
+
+    await channel.send(f"Hezky pěkně! {winner.mention} vyhrál {prize}!")
+    
 
 
 
