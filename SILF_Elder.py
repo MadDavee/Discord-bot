@@ -60,7 +60,7 @@ async def teplota(context):
         with urllib.request.urlopen("http://109.183.224.100:2222/api") as url:      #Deklarace URL adresy
             data = json.loads(url.read().decode())                                    #Dekodovani JSONu
             tmp = data['temperature']
-            pre = data['humidity'] * 100
+            pre = round(data['humidity'], 2) * 100
             await context.message.channel.send("V Jakubovo pokoji je právě {} °C a {} % vlhkosti.".format(tmp, pre))
 
     except:
