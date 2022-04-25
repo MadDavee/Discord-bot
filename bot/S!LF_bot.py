@@ -168,4 +168,4 @@ async def ga(ctx):
 
 
 # run the client on the server
-client.run('NzU4OTU5MTgwMTA2MTcwMzg5.X22h0Q.B1TNzWVc0zi0-Ps62ifXVZWlc-4')
+client.run('')
